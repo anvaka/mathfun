@@ -18,8 +18,13 @@ function main() {
   for (var x = fromX; x < toX; x += step) {
     var y = Math.sin(x);
 
-    var screenX = (x - fromX) * width / mathWidth;
-    var screenY = (y - fromY) * height / mathHeight;
+    var angle = Math.PI/2;
+    var rotX = x * Math.cos(angle) - y * Math.sin(angle);
+    var rotY = x * Math.sin(angle) + y * Math.cos(angle);
+
+    var screenX = (rotX - fromX) * width / mathWidth;
+    var screenY = (rotY - fromY) * height / mathHeight;
+
 
     pixel(screenX, screenY, 0, 255, 0);
   }
