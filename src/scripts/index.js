@@ -6,17 +6,19 @@ function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
   var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-  var map = heightMap(9, 0.7);
-  var size = map.size;
   var width = plot.width;
   var height = plot.height;
+  var map = heightMap(9, 0.7);
+  var size = map.size;
 
   ctx.clearRect(0, 0, width, height);
   for (var x = 0; x < width; ++x) {
     for (var y = 0; y < height; ++y) {
       var val = map.get(x, y);
       var c = brightness(x, y, map.get(x + 1, y) - val);
-      pixel(x, y, c, c, c);
+      var x1 = x;//isoX(x, y);
+      var y1 = y;//isoY(x, y);
+      pixel(x1, y1, c, c, c);
     }
   }
 
@@ -27,7 +29,11 @@ function main() {
     return Math.floor(slope * 50) + 128;
   }
 
+  function isoX(x, y) { return 0.5 * (size + x - y); }
+  function isoY(x, y) { return 0.5 * (x + y); }
+
   function pixel(x, y, r, g, b) {
+    if (x < 0 || x > size || y > size || y < 0) return;
     x = Math.floor(x);
     y = Math.floor(y);
     var idx = (x + width * y) * 4;
