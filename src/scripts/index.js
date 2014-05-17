@@ -6,12 +6,13 @@ function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
   var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-  var map = heightMap(9, 0.8);
+  var map = heightMap(9, 0.7);
   var width = plot.width;
   var height = plot.height;
   for (var x = 0; x < width; ++x) {
     for (var y = 0; y < height; ++y) {
-      pixel(x, y, 0, map.get(x, y), 0);
+      var c = map.get(x, y);
+      pixel(x, y, 0, c/1.8,0);
     }
   }
 
