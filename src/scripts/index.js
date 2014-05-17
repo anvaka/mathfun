@@ -2,6 +2,8 @@
 
 document.body.onload = main;
 
+var rand = require('./random')(1);
+
 function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
@@ -12,12 +14,12 @@ function main() {
   var size = map.size;
 
   ctx.clearRect(0, 0, width, height);
-  for (var x = 0; x < width; ++x) {
-    for (var y = 0; y < height; ++y) {
+  for (var y = 0; y < height; ++y) {
+    for (var x = 0; x < width; ++x) {
       var val = map.get(x, y);
       var c = brightness(x, y, map.get(x + 1, y) - val);
-      var x1 = x;//isoX(x, y);
-      var y1 = y;//isoY(x, y);
+      var x1 = project(x, y, val);
+      var y1 = project(x, y, val, 1);
       pixel(x1, y1, c, c, c);
     }
   }
@@ -27,6 +29,13 @@ function main() {
   function brightness(x, y, slope) {
     if (x === size || y === size) return 0;
     return Math.floor(slope * 50) + 128;
+  }
+
+  function project(flatX, flatY, flatZ, isY) {
+    var zz = (flatZ) * 0.004;
+
+    if (isY) return height - flatY / zz;
+    return flatX/ zz;
   }
 
   function isoX(x, y) { return 0.5 * (size + x - y); }
@@ -69,12 +78,12 @@ function heightMap(detail, roughness) {
 
     for (y = half; y < max; y += size) {
       for (x = half; x < max; x += size) {
-        square(x, y, half, Math.random() * scale * 2 - scale);
+        square(x, y, half, rand() * scale * 2 - scale);
       }
     }
     for (y = 0; y <= max; y += half) {
       for (x = (y + half) % size; x <= max; x += size) {
-        diamond(x, y, half, Math.random() * scale * 2 - scale);
+        diamond(x, y, half, rand() * scale * 2 - scale);
       }
     }
     divide(size / 2);
