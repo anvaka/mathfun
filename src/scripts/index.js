@@ -9,14 +9,29 @@ function main() {
   var map = heightMap(9, 0.7);
   var width = plot.width;
   var height = plot.height;
-  for (var x = 0; x < width; ++x) {
-    for (var y = 0; y < height; ++y) {
-      var c = map.get(x, y);
-      pixel(x, y, 0, c/1.8,0);
-    }
+  animate();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderFrame();
   }
 
-  ctx.putImageData(plot, 0, 0);
+  function renderFrame() {
+    var timer = Date.now() * 0.0005;
+    timer = (1 + Math.sin(timer))/2;
+    ctx.clearRect(0, 0, width, height);
+    for (var x = 0; x < width; ++x) {
+      for (var y = 0; y < height; ++y) {
+        var c = map.get(x, y) * timer;
+        pixel(x, y, 0, c/1.2, c);
+      }
+    }
+    if (timer <= 0.0001) {
+      map = heightMap(9, 0.7);
+    }
+
+    ctx.putImageData(plot, 0, 0);
+  }
 
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
