@@ -2,7 +2,7 @@
 
 document.body.onload = main;
 
-var rand = require('./random')(1);
+var rand = require('./random')();
 
 function main() {
   var canvas = document.getElementById('scene');
@@ -12,7 +12,8 @@ function main() {
   var height = plot.height;
   var map = heightMap(9, 0.7);
   var size = map.size;
-  render();
+  //render();
+   frame();
 
   function render() {
     requestAnimationFrame(render);
@@ -20,24 +21,28 @@ function main() {
   }
 
   function frame() {
-    var t = (+new Date()) * 0.002;
+    var t = (+new Date()) * 0.0002;
+    ctx.beginPath();
 
     ctx.clearRect(0, 0, width, height);
     plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     for (var y = 0; y < height; ++y) {
       for (var x = 0; x < width; ++x) {
-        var h = map.get(x, y);
-        h *= (Math.sin(t) + 1)/2;
-        var h1 = map.get(x + 1, y);
-        h1 *= (Math.sin(t) + 1)/2;
-        var c = brightness(x, y, h1 - h);
-        var x1 = project(x, y, h);
-        var y1 = project(x, y, h, 1);
-        pixel(x1, y1, c, c, c);
+        var z = map.get(x, y);
+        var z1 = map.get(x + 1, y);
+        var c = brightness(x, y, z1 - z);
+
+        var left = project(x, y, z);
+        var top = project(x, y, z, 1);
+        var right = project(x + 1, y, 0);
+        var bottom = project(x + 1, y, 0, 1);
+        rect(left, top, right, bottom, c);
       }
     }
 
-    ctx.putImageData(plot, 0, 0);
+
+    ctx.stroke();
+   //ctx.putImageData(plot, 0, 0);
   }
 
   function brightness(x, y, slope) {
@@ -45,7 +50,7 @@ function main() {
     return Math.floor(slope * 50) + 128;
   }
 
-  function project(flatX, flatY, flatZ, isY) {
+  function project(flatX,flatY, flatZ, isY) {
     var pointX = isoX(flatX, flatY);
     var pointY = isoY(flatX, flatY);
     var x0 = width * 0.5;
@@ -54,13 +59,17 @@ function main() {
     var x = (pointX - size * 0.5) * 6;
     var y = (size - pointY) * 0.005 + 1;
 
-    return isY ? 
-      y0 + z / y :
-      x0 + x / y;
+    return isY ?  y0 + z / y : x0 + x / y;
   }
 
   function isoX(x, y) { return 0.5 * (size + x - y); }
   function isoY(x, y) { return 0.5 * (x + y); }
+
+  function rect(left, top, right, bottom, color) {
+    if (bottom < top) return;
+    ctx.fillStyle = 'rgba(' + color + ',' +  color + ',' +  color + ', 1)';
+    ctx.fillRect(left, top, right-left, bottom-top);
+  }
 
   function pixel(x, y, r, g, b) {
     if (x < 0 || x > size || y > size || y < 0) return;
