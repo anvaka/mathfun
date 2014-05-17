@@ -7,6 +7,7 @@ function main() {
   var ctx = canvas.getContext('2d');
   var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
   var map = heightMap(9, 0.7);
+  var size = map.size;
   var width = plot.width;
   var height = plot.height;
 
@@ -14,11 +15,17 @@ function main() {
   for (var x = 0; x < width; ++x) {
     for (var y = 0; y < height; ++y) {
       var val = map.get(x, y);
-      pixel(x, y, 0, c/1.2, c);
+      var c = brightness(x, y, map.get(x + 1, y) - val);
+      pixel(x, y, c, c, c);
     }
   }
 
   ctx.putImageData(plot, 0, 0);
+
+  function brightness(x, y, slope) {
+    if (x === size || y === size) return 0;
+    return Math.floor(slope * 50) + 128;
+  }
 
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
@@ -45,7 +52,8 @@ function heightMap(detail, roughness) {
 
   return {
     map: map,
-    get: get
+    get: get,
+    size: max
   };
 
   function divide(size) {
