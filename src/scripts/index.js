@@ -12,19 +12,33 @@ function main() {
   var height = plot.height;
   var map = heightMap(9, 0.7);
   var size = map.size;
+  render();
 
-  ctx.clearRect(0, 0, width, height);
-  for (var y = 0; y < height; ++y) {
-    for (var x = 0; x < width; ++x) {
-      var val = map.get(x, y);
-      var c = brightness(x, y, map.get(x + 1, y) - val);
-      var x1 = project(x, y, val);
-      var y1 = project(x, y, val, 1);
-      pixel(x1, y1, c, c, c);
-    }
+  function render() {
+    requestAnimationFrame(render);
+    frame();
   }
 
-  ctx.putImageData(plot, 0, 0);
+  function frame() {
+    var t = (+new Date()) * 0.002;
+
+    ctx.clearRect(0, 0, width, height);
+    plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    for (var y = 0; y < height; ++y) {
+      for (var x = 0; x < width; ++x) {
+        var h = map.get(x, y);
+        h *= (Math.sin(t) + 1)/2;
+        var h1 = map.get(x + 1, y);
+        h1 *= (Math.sin(t) + 1)/2;
+        var c = brightness(x, y, h1 - h);
+        var x1 = project(x, y, h);
+        var y1 = project(x, y, h, 1);
+        pixel(x1, y1, c, c, c);
+      }
+    }
+
+    ctx.putImageData(plot, 0, 0);
+  }
 
   function brightness(x, y, slope) {
     if (x === size || y === size) return 0;
@@ -32,10 +46,17 @@ function main() {
   }
 
   function project(flatX, flatY, flatZ, isY) {
-    var zz = (flatZ) * 0.004;
+    var pointX = isoX(flatX, flatY);
+    var pointY = isoY(flatX, flatY);
+    var x0 = width * 0.5;
+    var y0 = height * 0.2;
+    var z = size * 0.5 - flatZ + pointY * 0.75;
+    var x = (pointX - size * 0.5) * 6;
+    var y = (size - pointY) * 0.005 + 1;
 
-    if (isY) return height - flatY / zz;
-    return flatX/ zz;
+    return isY ? 
+      y0 + z / y :
+      x0 + x / y;
   }
 
   function isoX(x, y) { return 0.5 * (size + x - y); }
