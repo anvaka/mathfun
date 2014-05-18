@@ -7,31 +7,35 @@ function main() {
   var ctx = canvas.getContext('2d');
   var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
   var map = heightMap(9, 0.7);
+  var size = map.size;
   var width = plot.width;
   var height = plot.height;
   frame();
 
   function frame() {
-    //requestAnimationFrame(frame);
-    var timer = 1;//Date.now() * 0.0008;
-    //timer = (1 + Math.sin(timer))/2;
+    requestAnimationFrame(frame);
+    var timer = Date.now() * 0.0006;
+    timer = (1 + Math.sin(timer))/2;
     ctx.clearRect(0, 0, width, height);
     plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
     for (var x = 0; x < width; ++x) {
       for (var y = 0; y < height; ++y) {
         var c = map.get(x, y) * timer;
-        // play with color
-        pixel(x, y, 0, c/1.2, c);
+        var x0 = x;//isoX(x, y);
+        var y0 = y;//isoY(x, y);
+        pixel(x0, y0, 0, c/1.2, c);
       }
     }
-    /*
     if (timer <= 0.0001) {
       map = heightMap(9, 0.7);
     }
-    */
 
     ctx.putImageData(plot, 0, 0);
   }
+
+  // show slide why
+  function isoX(x, y) { return 0.5 * (size + x - y); }
+  function isoY(x, y) { return 0.5 * (x + y); }
 
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
@@ -59,7 +63,8 @@ function heightMap(detail, roughness) {
 
   return {
     map: map,
-    get: get
+    get: get,
+    size: max
   };
 
   function divide(size) {
