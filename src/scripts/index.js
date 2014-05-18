@@ -9,23 +9,33 @@ function main() {
   var width = canvas.width = window.innerWidth;
   var height = canvas.height = window.innerHeight;
   var ctx = canvas.getContext('2d');
-  var plot = ctx.getImageData(0, 0, width, height);
   var map = heightMap(9, 0.7);
   var size = map.size;
+  var plot;
 
-  ctx.clearRect(0, 0, width, height);
-  for (var y = 0; y < size; ++y) {
-    for (var x = 0; x < size; ++x) {
-      var val = map.get(x, y);
-      // explain
-      var c = brightness(x, y, map.get(x + 1, y) - val);
-      var x1 = project(x, y, val);
-      var y1 = project(x, y, val, 1);
-      pixel(x1, y1, c, c, c);
+  frame();
+
+  function frame() {
+    //requestAnimationFrame(frame);
+    var t = (+ new Date()) * 0.005;
+    t = (1 + Math.sin(t))/2;
+
+    ctx.clearRect(0, 0, width, height);
+    plot = ctx.getImageData(0, 0, width, height);
+    for (var y = 0; y < size; ++y) {
+      for (var x = 0; x < size; ++x) {
+        var val = map.get(x, y);
+        var val1 = map.get(x + 1, y);
+//        val *= t;
+//        val1 *= t;
+        var c = brightness(x, y, val1 - val);
+        var x1 = project(x, y, val);
+        var y1 = project(x, y, val, 1);
+        pixel(x1, y1, c, c, c);
+      }
     }
+    ctx.putImageData(plot, 0, 0);
   }
-
-  ctx.putImageData(plot, 0, 0);
 
   function brightness(x, y, slope) {
     if (x === size || y === size) return 0;
@@ -54,6 +64,7 @@ function main() {
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
     y = Math.floor(y);
+    if (x < 0 || x > width || y < 0 || y > height) return;
     var idx = (x + width * y) * 4;
     plot.data[idx] = r;
     plot.data[idx + 1] = g;
