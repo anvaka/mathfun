@@ -2,18 +2,18 @@
 
 document.body.onload = main;
 
-var rand = require('./random')();
+var rand = require('./random')(42);
 
 function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
-  var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-  var width = plot.width;
-  var height = plot.height;
+  var width = canvas.width = window.innerWidth;
+  var height = canvas.height = window.innerHeight;
+
   var map = heightMap(9, 0.7);
   var size = map.size;
-  //render();
-   frame();
+  ///render();
+  frame();
 
   function render() {
     requestAnimationFrame(render);
@@ -22,31 +22,30 @@ function main() {
 
   function frame() {
     var t = (+new Date()) * 0.0002;
-    ctx.beginPath();
-
     ctx.clearRect(0, 0, width, height);
-    plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    for (var y = 0; y < height; ++y) {
-      for (var x = 0; x < width; ++x) {
+    for (var y = 0; y < size; ++y) {
+      for (var x = 0; x < size; ++x) {
         var z = map.get(x, y);
         var z1 = map.get(x + 1, y);
+//        z *= (1 + Math.sin(t))/2;
+//        z1 *= (1 + Math.sin(t))/2;
         var c = brightness(x, y, z1 - z);
 
         var left = project(x, y, z);
         var top = project(x, y, z, 1);
         var right = project(x + 1, y, 0);
         var bottom = project(x + 1, y, 0, 1);
-        rect(left, top, right, bottom, c);
+        var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
+        rect(left, top, right, bottom, color);
+        var waterLeft = project(x, y, size * 0.2);
+        var waterTop = project(x, y, size * 0.2, 1);
+        rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
     }
-
-
-    ctx.stroke();
-   //ctx.putImageData(plot, 0, 0);
   }
 
   function brightness(x, y, slope) {
-    if (x === size || y === size) return 0;
+    if (x >= size-1 || y >= size -1) return 0;
     return Math.floor(slope * 50) + 128;
   }
 
@@ -55,7 +54,7 @@ function main() {
     var pointY = isoY(flatX, flatY);
     var x0 = width * 0.5;
     var y0 = height * 0.2;
-    var z = size * 0.5 - flatZ + pointY * 0.75;
+    var z = size * 0.4 - flatZ + pointY * 0.75;
     var x = (pointX - size * 0.5) * 6;
     var y = (size - pointY) * 0.005 + 1;
 
@@ -66,20 +65,9 @@ function main() {
   function isoY(x, y) { return 0.5 * (x + y); }
 
   function rect(left, top, right, bottom, color) {
-    if (bottom < top) return;
-    ctx.fillStyle = 'rgba(' + color + ',' +  color + ',' +  color + ', 1)';
+    if (bottom < top || right < left) return;
+    ctx.fillStyle = color;
     ctx.fillRect(left, top, right-left, bottom-top);
-  }
-
-  function pixel(x, y, r, g, b) {
-    if (x < 0 || x > size || y > size || y < 0) return;
-    x = Math.floor(x);
-    y = Math.floor(y);
-    var idx = (x + width * y) * 4;
-    plot.data[idx] = r;
-    plot.data[idx + 1] = g;
-    plot.data[idx + 2] = b;
-    plot.data[idx + 3] = 255;
   }
 }
 
