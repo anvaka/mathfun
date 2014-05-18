@@ -2,38 +2,52 @@
 
 document.body.onload = main;
 
+var rand = require('./random')();
+
 function main() {
   var canvas = document.getElementById('scene');
+  var width = canvas.width = window.innerWidth;
+  var height = canvas.height = window.innerHeight;
   var ctx = canvas.getContext('2d');
-  var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+  var plot = ctx.getImageData(0, 0, width, height);
   var map = heightMap(9, 0.7);
   var size = map.size;
-  var width = plot.width;
-  var height = plot.height;
-  frame();
 
-  function frame() {
-    requestAnimationFrame(frame);
-    var timer = Date.now() * 0.0006;
-    timer = (1 + Math.sin(timer))/2;
-    ctx.clearRect(0, 0, width, height);
-    plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-    for (var x = 0; x < width; ++x) {
-      for (var y = 0; y < height; ++y) {
-        var c = map.get(x, y) * timer;
-        var x0 = x;//isoX(x, y);
-        var y0 = y;//isoY(x, y);
-        pixel(x0, y0, 0, c/1.2, c);
-      }
+  ctx.clearRect(0, 0, width, height);
+  for (var y = 0; y < size; ++y) {
+    for (var x = 0; x < size; ++x) {
+      var val = map.get(x, y);
+      // explain
+      var c = brightness(x, y, map.get(x + 1, y) - val);
+      var x1 = project(x, y, val);
+      var y1 = project(x, y, val, 1);
+      pixel(x1, y1, c, c, c);
     }
-    if (timer <= 0.0001) {
-      map = heightMap(9, 0.7);
-    }
-
-    ctx.putImageData(plot, 0, 0);
   }
 
-  // show slide why
+  ctx.putImageData(plot, 0, 0);
+
+  function brightness(x, y, slope) {
+    if (x === size || y === size) return 0;
+    return Math.floor(slope * 50) + 128;
+  }
+
+  function project(flatX, flatY, flatZ, isY) {
+    // use flatX/flatY for demo
+    var pointX = isoX(flatX, flatY);
+    var pointY = isoY(flatX, flatY);
+    var x0 = width * 0.5;
+    var y0 = height * 0.2;
+    var z = size * 0.5 - flatZ + pointY * 0.75;
+    var x = (pointX - size * 0.5) * 6;
+    var y = (size - pointY) * 0.005 + 2;
+
+    // explain
+    return isY ? 
+      y0 + z / y :
+      x0 + x / y;
+  }
+
   function isoX(x, y) { return 0.5 * (size + x - y); }
   function isoY(x, y) { return 0.5 * (x + y); }
 
@@ -48,7 +62,6 @@ function main() {
   }
 }
 
-// show slide with pictures
 function heightMap(detail, roughness) {
   var size = Math.pow(2, detail) + 1,
       max = size - 1,
@@ -74,12 +87,12 @@ function heightMap(detail, roughness) {
 
     for (y = half; y < max; y += size) {
       for (x = half; x < max; x += size) {
-        square(x, y, half, Math.random() * scale * 2 - scale);
+        square(x, y, half, rand() * scale * 2 - scale);
       }
     }
     for (y = 0; y <= max; y += half) {
       for (x = (y + half) % size; x <= max; x += size) {
-        diamond(x, y, half, Math.random() * scale * 2 - scale);
+        diamond(x, y, half, rand() * scale * 2 - scale);
       }
     }
     divide(size / 2);
