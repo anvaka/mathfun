@@ -1,5 +1,3 @@
-// based on: http://www.playfuljs.com/realistic-terrain-in-130-lines/
-
 document.body.onload = main;
 
 function main() {
@@ -10,17 +8,31 @@ function main() {
 
   var width = plot.width;
   var height = plot.height;
-  for (var x = 0; x < width; ++x) {
-    for (var y = 0; y < height; ++y) {
-//      pixel(x, y,  0, (x) % 255, 0);
-    }
+
+  // play with this:
+  var fromX = -10, toX = 10, fromY = -10, toY = 10;
+  var mathWidth = toX - fromX;
+  var mathHeight = toY - fromY;
+
+  var step = (toX - fromX)/(20 * width);
+
+  for (var x = fromX; x < toX; x += step) {
+    var y = Math.sin(x);
+
+    var screenX = (x - fromX) * width / mathWidth;
+    var screenY = (y - fromY) * height / mathHeight;
+
+    // play with screenX/screenY - show regular x, y
+    pixel(screenX, screenY, 0, 255, 0);
+//    pixel(screenX + 5 - Math.random() * 10 , screenY + 5 - Math.random() * 10, 0, 255, 0);
   }
 
   ctx.putImageData(plot, 0, 0);
 
   function pixel(x, y, r, g, b) {
+    x = Math.floor(x);
+    y = Math.floor(y);
     var idx = (x + width * y) * 4;
-    // play with colors:
     plot.data[idx] = r;
     plot.data[idx + 1] = g;
     plot.data[idx + 2] = b;
