@@ -15,7 +15,8 @@ function main() {
   var startY = 0;
   var skip = 0;
   var skipFrame = false;
-  var dy = 1;
+  var dt = -size * 0.2;
+  var t = 1000;
    render();
   //frame();
 
@@ -25,44 +26,30 @@ function main() {
   }
 
   function frame() {
-    y = startY;
-    if (skipFrame && skip % 120) {
-      skip++;
-      return;
-    } else {
-      skipFrame = false;
-    }
-    for (var x = 0; x < size; ++x) {
-      var z = map.get(x, y);
-      var z1 = map.get(x + 1, y);
-      var c = brightness(x, y, z1 - z);
+    t+= dt;
+    ctx.clearRect(0, 0, width, height);
+    for (var y=0; y < size; ++y) {
+      for (var x = 0; x < size; ++x) {
+        var z = map.get(x, y);
+        var z1 = map.get(x + 1, y);
+        z *= t/1000;
+        z1 *= t/1000;
 
-      if (dy < 0) {
-        c = 0;
-      }
-      var left = project(x, y, z);
-      var top = project(x, y, z, 1);
-      var right = project(x + 1, y, 0);
-      var bottom = project(x + 1, y, 0, 1);
-      var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
-      rect(left, top, right, bottom, color);
-      var waterLeft = project(x, y, size * 0.2);
-      var waterTop = project(x, y, size * 0.2, 1);
-      if (dy < 0) {
-        rect(waterLeft, waterTop, right, bottom, 'rgba(0, 0, 0, 1)');
-      } else {
+        var c = brightness(x, y, z1 - z);
+
+        var left = project(x, y, z);
+        var top = project(x, y, z, 1);
+        var right = project(x + 1, y, 0);
+        var bottom = project(x + 1, y, 0, 1);
+        var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
+        rect(left, top, right, bottom, color);
+        var waterLeft = project(x, y, size * 0.2);
+        var waterTop = project(x, y, size * 0.2, 1);
         rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
     }
-    startY += dy;
-    if (startY === size) {
-      dy = -1;
-      skipFrame = true;
-      skip = 1;
-    } else if (startY === 0) {
-      dy = 1;
-      ctx.clearRect(0, 0, width, height);
-      map = heightMap(9, 0.7);
+    if (t < 0 || t > 1000) {
+      dt *=-1;
     }
   }
 
