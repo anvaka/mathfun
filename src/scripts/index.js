@@ -16,25 +16,30 @@ function main() {
   frame();
 
   function frame() {
-    //requestAnimationFrame(frame);
-    var t = (+ new Date()) * 0.005;
-    t = (1 + Math.sin(t))/2;
-
     ctx.clearRect(0, 0, width, height);
-    plot = ctx.getImageData(0, 0, width, height);
-    for (var y = 0; y < size; ++y) {
-      for (var x = 0; x < size; ++x) {
-        var val = map.get(x, y);
-        var val1 = map.get(x + 1, y);
-//        val *= t;
-//        val1 *= t;
-        var c = brightness(x, y, val1 - val);
-        var x1 = project(x, y, val);
-        var y1 = project(x, y, val, 1);
-        pixel(x1, y1, c, c, c);
+    for (var y = 0; y < size-1; ++y) {
+      for (var x = 0; x < size-1; ++x) {
+        var z = map.get(x, y);
+        var z1 = map.get(x + 1, y);
+        var c = brightness(x, y, z1 - z);
+
+        var left = project(x, y, z);
+        var top = project(x, y, z, 1);
+        var right = project(x + 1, y, 0);
+        var bottom = project(x + 1, y, 0, 1);
+        var color = 'rgba(' + c+ ',' +  c+ ',' +  c+ ', 1)';
+        rect(left, top, right, bottom, color);
+        var waterLeft = project(x, y, size * 0.2);
+        var waterTop = project(x, y, size * 0.2, 1);
+        rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150,200, 0.15)');
       }
     }
-    ctx.putImageData(plot, 0, 0);
+  }
+
+  function rect(left, top, right, bottom, color) {
+    if (bottom < top) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(left, top, right-left, bottom-top);
   }
 
   function brightness(x, y, slope) {
@@ -43,16 +48,14 @@ function main() {
   }
 
   function project(flatX, flatY, flatZ, isY) {
-    // use flatX/flatY for demo
     var pointX = isoX(flatX, flatY);
     var pointY = isoY(flatX, flatY);
     var x0 = width * 0.5;
     var y0 = height * 0.2;
     var z = size * 0.5 - flatZ + pointY * 0.75;
     var x = (pointX - size * 0.5) * 6;
-    var y = (size - pointY) * 0.005 + 2;
+    var y = (size - pointY) * 0.005 + 1;
 
-    // explain
     return isY ? 
       y0 + z / y :
       x0 + x / y;
