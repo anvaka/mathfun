@@ -15,19 +15,30 @@ function main() {
   var mathHeight = toY - fromY;
 
   var step = (toX - fromX)/(20 * width);
+  var t = 0;
 
-  for (var x = fromX; x < toX; x += step) {
-    var y = Math.sin(x);
+  frame();
 
-    var screenX = (x - fromX) * width / mathWidth;
-    var screenY = (y - fromY) * height / mathHeight;
+  function frame() {
+    //requestAnimationFrame(frame);
+    ctx.clearRect(0, 0, width, height);
+    plot = ctx.getImageData(0, 0, width, height);
+    for (var x = fromX; x < toX; x += step) {
+      //  2. use t to change x; Play with y = x * sin(x);
+      var y = Math.sin(x);
 
-    // play with screenX/screenY - show regular x, y
-    pixel(screenX, screenY, 0, 255, 0);
-//    pixel(screenX + 5 - Math.random() * 10 , screenY + 5 - Math.random() * 10, 0, 255, 0);
+      var screenX = (x - fromX) * width / mathWidth;
+      var screenY = (y - fromY) * height / mathHeight;
+
+      // 0. Play with random
+      // 1. add t to move to the left
+      // 3. use t to animate color
+      pixel(screenX, screenY, 0, 255, 0);
+    // pixel(screenX + 5 - Math.random() * 10 , screenY + 5 - Math.random() * 10, 0, 255, 0);
+    }
+    ctx.putImageData(plot, 0, 0);
   }
 
-  ctx.putImageData(plot, 0, 0);
 
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
