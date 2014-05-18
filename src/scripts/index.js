@@ -2,7 +2,7 @@
 
 document.body.onload = main;
 
-var rand = require('./random')(42);
+var heightMap = require('./heightMap');
 
 function main() {
   var canvas = document.getElementById('scene');
@@ -16,9 +16,8 @@ function main() {
   var skip = 0;
   var skipFrame = false;
   var dt = -size * 0.2;
-  var t = 1000;
-   render();
-  //frame();
+  // render();
+  frame();
 
   function render() {
     requestAnimationFrame(render);
@@ -26,14 +25,11 @@ function main() {
   }
 
   function frame() {
-    t+= dt;
     ctx.clearRect(0, 0, width, height);
     for (var y=0; y < size; ++y) {
       for (var x = 0; x < size; ++x) {
         var z = map.get(x, y);
         var z1 = map.get(x + 1, y);
-        z *= t/1000;
-        z1 *= t/1000;
 
         var c = brightness(x, y, z1 - z);
 
@@ -47,9 +43,6 @@ function main() {
         var waterTop = project(x, y, size * 0.2, 1);
         rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
-    }
-    if (t < 0 || t > 1000) {
-      dt *=-1;
     }
   }
 
@@ -78,73 +71,4 @@ function main() {
     ctx.fillStyle = color;
     ctx.fillRect(left, top, right-left, bottom-top);
   }
-}
-
-function heightMap(detail, roughness) {
-  var size = Math.pow(2, detail) + 1,
-      max = size - 1,
-      map = new Float32Array(size * size);
-
-  set(0, 0, max / 2);
-  set(max, 0, max / 2);
-  set(max, max, max / 2);
-  set(0, max, max / 2);
-
-  divide(max);
-
-  return {
-    map: map,
-    get: get,
-    size: max
-  };
-
-  function divide(size) {
-    var x, y, half = size / 2;
-    var scale = roughness * size;
-    if (half < 1) return;
-
-    for (y = half; y < max; y += size) {
-      for (x = half; x < max; x += size) {
-        square(x, y, half, rand() * scale * 2 - scale);
-      }
-    }
-    for (y = 0; y <= max; y += half) {
-      for (x = (y + half) % size; x <= max; x += size) {
-        diamond(x, y, half, rand() * scale * 2 - scale);
-      }
-    }
-    divide(size / 2);
-  }
-
-  function diamond(x, y, size, offset) {
-    var avg = average(
-      get(x, y - size),      // top
-      get(x + size, y),      // right
-      get(x, y + size),      // bottom
-      get(x - size, y)       // left
-    );
-
-    set(x, y, avg + offset);
-  }
-
-  function square(x, y, size, offset) {
-    var avg = average(
-      get(x - size, y - size),      // left, top
-      get(x + size, y - size),      // right, top
-      get(x + size, y + size),      // right, bottom
-      get(x - size, y + size)       // left, bottom
-    );
-    set(x, y, avg + offset);
-  }
-
-  function average(w, x, y, z) {
-    return (w + x + y + z) / 4;
-  }
-
-  function get(x, y) {
-    if (x < 0 || x > max || y < 0 || y > max) return -1;
-    return map[x + size * y];
-  }
-
-  function set(x, y, value) { map[x + size * y] = value; }
 }
