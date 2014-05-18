@@ -12,8 +12,10 @@ function main() {
 
   var map = heightMap(9, 0.7);
   var size = map.size;
-  ///render();
-  frame();
+  var startY = 0;
+  var dy = 1;
+   render();
+  //frame();
 
   function render() {
     requestAnimationFrame(render);
@@ -21,26 +23,36 @@ function main() {
   }
 
   function frame() {
-    var t = (+new Date()) * 0.0002;
-    ctx.clearRect(0, 0, width, height);
-    for (var y = 0; y < size; ++y) {
-      for (var x = 0; x < size; ++x) {
-        var z = map.get(x, y);
-        var z1 = map.get(x + 1, y);
-//        z *= (1 + Math.sin(t))/2;
-//        z1 *= (1 + Math.sin(t))/2;
-        var c = brightness(x, y, z1 - z);
+    y = startY;
+    for (var x = 0; x < size; ++x) {
+      var z = map.get(x, y);
+      var z1 = map.get(x + 1, y);
+      var c = brightness(x, y, z1 - z);
 
-        var left = project(x, y, z);
-        var top = project(x, y, z, 1);
-        var right = project(x + 1, y, 0);
-        var bottom = project(x + 1, y, 0, 1);
-        var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
-        rect(left, top, right, bottom, color);
-        var waterLeft = project(x, y, size * 0.2);
-        var waterTop = project(x, y, size * 0.2, 1);
+      if (dy < 0) {
+        c = 0;
+      }
+      var left = project(x, y, z);
+      var top = project(x, y, z, 1);
+      var right = project(x + 1, y, 0);
+      var bottom = project(x + 1, y, 0, 1);
+      var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
+      rect(left, top, right, bottom, color);
+      var waterLeft = project(x, y, size * 0.2);
+      var waterTop = project(x, y, size * 0.2, 1);
+      if (dy < 0) {
+        rect(waterLeft, waterTop, right, bottom, 'rgba(0, 0, 0, 1)');
+      } else {
         rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
+    }
+    startY += dy;
+    if (startY === size) {
+      dy = -1;
+    } else if (startY === 0) {
+      dy = 1;
+      ctx.clearRect(0, 0, width, height);
+      map = heightMap(9, 0.7);
     }
   }
 
