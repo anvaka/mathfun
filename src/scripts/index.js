@@ -9,15 +9,29 @@ function main() {
   var map = heightMap(9, 0.7);
   var width = plot.width;
   var height = plot.height;
+  frame();
 
-  for (var x = 0; x < width; ++x) {
-    for (var y = 0; y < height; ++y) {
-      var c = map.get(x, y);
-//      pixel(x, y, 0, c/1.8,0);
+  function frame() {
+    //requestAnimationFrame(frame);
+    var timer = 1;//Date.now() * 0.0008;
+    //timer = (1 + Math.sin(timer))/2;
+    ctx.clearRect(0, 0, width, height);
+    plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    for (var x = 0; x < width; ++x) {
+      for (var y = 0; y < height; ++y) {
+        var c = map.get(x, y) * timer;
+        // play with color
+        pixel(x, y, 0, c/1.2, c);
+      }
     }
-  }
+    /*
+    if (timer <= 0.0001) {
+      map = heightMap(9, 0.7);
+    }
+    */
 
-  ctx.putImageData(plot, 0, 0);
+    ctx.putImageData(plot, 0, 0);
+  }
 
   function pixel(x, y, r, g, b) {
     x = Math.floor(x);
