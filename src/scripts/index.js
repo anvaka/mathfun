@@ -11,7 +11,7 @@ function main() {
   var width = canvas.width = window.innerWidth;
   var height = canvas.height = window.innerHeight;
 
-  var map = perlinMap(9, 4);
+  var map = heightMap(9, 0.7);
   var size = map.size;
   var startY = 0;
   var skip = 0;
@@ -40,8 +40,8 @@ function main() {
         var bottom = project(x + 1, y, 0, 1);
         var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
         rect(left, top, right, bottom, color);
-        var waterLeft = project(x, y, size * 0.0);
-        var waterTop = project(x, y, size * 0.0, 1);
+        var waterLeft = project(x, y, size * 0.2);
+        var waterTop = project(x, y, size * 0.2, 1);
         rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
     }
@@ -59,9 +59,9 @@ function main() {
     var y0 = height * 0.2;
     var z = size * 0.4 - flatZ + pointY * 0.75;
     var x = (pointX - size * 0.5) * 6;
-    var y = (size - pointY) * 0.005 + 3;
+    var y = (size - pointY) * 0.005 + 1;
 
-    return isY ?  y0 + z*3 / y : x0 + x / y;
+    return isY ?  y0 + z / y : x0 + x / y;
   }
 
   function isoX(x, y) { return 0.5 * (size + x - y); }
