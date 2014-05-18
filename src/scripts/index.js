@@ -2,9 +2,6 @@
 
 document.body.onload = main;
 
-var heightMap = require('./heightMap');
-var perlinMap = require('./perlinMap');
-
 function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
@@ -18,10 +15,12 @@ function main() {
 //      pixel(x, y,  0, (x) % 255, 0);
     }
   }
+
   ctx.putImageData(plot, 0, 0);
 
   function pixel(x, y, r, g, b) {
     var idx = (x + width * y) * 4;
+    // play with colors:
     plot.data[idx] = r;
     plot.data[idx + 1] = g;
     plot.data[idx + 2] = b;
