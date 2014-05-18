@@ -13,6 +13,8 @@ function main() {
   var map = heightMap(9, 0.7);
   var size = map.size;
   var startY = 0;
+  var skip = 0;
+  var skipFrame = false;
   var dy = 1;
    render();
   //frame();
@@ -24,6 +26,12 @@ function main() {
 
   function frame() {
     y = startY;
+    if (skipFrame && skip % 120) {
+      skip++;
+      return;
+    } else {
+      skipFrame = false;
+    }
     for (var x = 0; x < size; ++x) {
       var z = map.get(x, y);
       var z1 = map.get(x + 1, y);
@@ -49,6 +57,8 @@ function main() {
     startY += dy;
     if (startY === size) {
       dy = -1;
+      skipFrame = true;
+      skip = 1;
     } else if (startY === 0) {
       dy = 1;
       ctx.clearRect(0, 0, width, height);

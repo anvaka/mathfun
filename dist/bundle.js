@@ -3,45 +3,94 @@
 
 document.body.onload = main;
 
+var rand = require('./random')(42);
+
 function main() {
   var canvas = document.getElementById('scene');
   var ctx = canvas.getContext('2d');
-  var plot = ctx.getImageData(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-  var map = heightMap(9, 0.7);
-  var width = plot.width;
-  var height = plot.height;
-  animate();
+  var width = canvas.width = window.innerWidth;
+  var height = canvas.height = window.innerHeight;
 
-  function animate() {
-    requestAnimationFrame(animate);
-    renderFrame();
+  var map = heightMap(9, 0.7);
+  var size = map.size;
+  var startY = 0;
+  var skip = 0;
+  var skipFrame = false;
+  var dy = 1;
+   render();
+  //frame();
+
+  function render() {
+    requestAnimationFrame(render);
+    frame();
   }
 
-  function renderFrame() {
-    var timer = Date.now() * 0.0005;
-    timer = (1 + Math.sin(timer))/2;
-    ctx.clearRect(0, 0, width, height);
-    for (var x = 0; x < width; ++x) {
-      for (var y = 0; y < height; ++y) {
-        var c = map.get(x, y) * timer;
-        pixel(x, y, 0, c/1.2, c);
+  function frame() {
+    y = startY;
+    if (skipFrame && skip % 120) {
+      skip++;
+      return;
+    } else {
+      skipFrame = false;
+    }
+    for (var x = 0; x < size; ++x) {
+      var z = map.get(x, y);
+      var z1 = map.get(x + 1, y);
+      var c = brightness(x, y, z1 - z);
+
+      if (dy < 0) {
+        c = 0;
+      }
+      var left = project(x, y, z);
+      var top = project(x, y, z, 1);
+      var right = project(x + 1, y, 0);
+      var bottom = project(x + 1, y, 0, 1);
+      var color = 'rgba(' + c+ ',' +  c + ',' +  c+ ', 1)';
+      rect(left, top, right, bottom, color);
+      var waterLeft = project(x, y, size * 0.2);
+      var waterTop = project(x, y, size * 0.2, 1);
+      if (dy < 0) {
+        rect(waterLeft, waterTop, right, bottom, 'rgba(0, 0, 0, 1)');
+      } else {
+        rect(waterLeft, waterTop, right, bottom, 'rgba(50, 150, 200, 0.15)');
       }
     }
-    if (timer <= 0.0001) {
+    startY += dy;
+    if (startY === size) {
+      dy = -1;
+      skipFrame = true;
+      skip = 1;
+    } else if (startY === 0) {
+      dy = 1;
+      ctx.clearRect(0, 0, width, height);
       map = heightMap(9, 0.7);
     }
-
-    ctx.putImageData(plot, 0, 0);
   }
 
-  function pixel(x, y, r, g, b) {
-    x = Math.floor(x);
-    y = Math.floor(y);
-    var idx = (x + width * y) * 4;
-    plot.data[idx] = r;
-    plot.data[idx + 1] = g;
-    plot.data[idx + 2] = b;
-    plot.data[idx + 3] = 255;
+  function brightness(x, y, slope) {
+    if (x >= size-1 || y >= size -1) return 0;
+    return Math.floor(slope * 50) + 128;
+  }
+
+  function project(flatX,flatY, flatZ, isY) {
+    var pointX = isoX(flatX, flatY);
+    var pointY = isoY(flatX, flatY);
+    var x0 = width * 0.5;
+    var y0 = height * 0.2;
+    var z = size * 0.4 - flatZ + pointY * 0.75;
+    var x = (pointX - size * 0.5) * 6;
+    var y = (size - pointY) * 0.005 + 1;
+
+    return isY ?  y0 + z / y : x0 + x / y;
+  }
+
+  function isoX(x, y) { return 0.5 * (size + x - y); }
+  function isoY(x, y) { return 0.5 * (x + y); }
+
+  function rect(left, top, right, bottom, color) {
+    if (bottom < top || right < left) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(left, top, right-left, bottom-top);
   }
 }
 
@@ -59,7 +108,8 @@ function heightMap(detail, roughness) {
 
   return {
     map: map,
-    get: get
+    get: get,
+    size: max
   };
 
   function divide(size) {
@@ -69,12 +119,12 @@ function heightMap(detail, roughness) {
 
     for (y = half; y < max; y += size) {
       for (x = half; x < max; x += size) {
-        square(x, y, half, Math.random() * scale * 2 - scale);
+        square(x, y, half, rand() * scale * 2 - scale);
       }
     }
     for (y = 0; y <= max; y += half) {
       for (x = (y + half) % size; x <= max; x += size) {
-        diamond(x, y, half, Math.random() * scale * 2 - scale);
+        diamond(x, y, half, rand() * scale * 2 - scale);
       }
     }
     divide(size / 2);
@@ -112,5 +162,21 @@ function heightMap(detail, roughness) {
 
   function set(x, y, value) { map[x + size * y] = value; }
 }
+
+},{"./random":2}],2:[function(require,module,exports){
+module.exports = function random(seed) {
+  if (typeof seed !== 'number') seed = +new Date();
+
+  return function () {
+    // Robert Jenkins' 32 bit integer hash function.
+    seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
+    seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
+    seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
+    seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
+    seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
+    seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+    return (seed & 0xfffffff) / 0x10000000;
+  };
+};
 
 },{}]},{},[1])
