@@ -19,7 +19,6 @@ function main() {
 
   function frame() {
     requestAnimationFrame(frame);
-    ctx.clearRect(0, 0, width, height);
     var y = startY;
     for (var x = 0; x < size-1; ++x) {
       var z = map.get(x, y);
@@ -62,9 +61,9 @@ function main() {
     var pointY = isoY(flatX, flatY);
     var x0 = width * 0.5;
     var y0 = height * 0.2;
-    var z = size * 0.5 - flatZ + pointY * 0.75;
+    var z = size * 0.5 - flatZ + pointY * 2.75;
     var x = (pointX - size * 0.5) * 6;
-    var y = (size - pointY) * 0.005 + 1;
+    var y = (size - pointY) * 0.005 + 3;
 
     return isY ? 
       y0 + z / y :
