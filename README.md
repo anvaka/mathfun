@@ -10,7 +10,7 @@ git clone https://github.com/anvaka/mathfun
 cd mathfun
 ```
 
-And then selcting a tag:
+And then selecting a tag:
 
 ```
 git checkout Slide_1
