@@ -22,4 +22,4 @@ git checkout Slide_10
 
 # For would be students in Ukraine
 
-If you are considering joing my sister's University, check out this [mind map](https://www.mindomo.com/ru/mindmap/31b4f1524f404c41b3f49d0ef71da768)
+If you are considering joining my sister's University, check out this [mind map](https://www.mindomo.com/ru/mindmap/31b4f1524f404c41b3f49d0ef71da768)
