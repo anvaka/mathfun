@@ -20,6 +20,6 @@ git checkout Slide_1
 git checkout Slide_10
 ```
 
-# For would be stdents in Ukraine
+# For would be students in Ukraine
 
-If you are considering joing my sister's university, check out this [mind map](https://www.mindomo.com/ru/mindmap/31b4f1524f404c41b3f49d0ef71da768)
+If you are considering joing my sister's University, check out this [mind map](https://www.mindomo.com/ru/mindmap/31b4f1524f404c41b3f49d0ef71da768)
